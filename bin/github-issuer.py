@@ -50,7 +50,7 @@ if args.debug:
 
 r = requests.post(url, auth=(args.user, args.password), data=issue)
 
-if r.status_code != 201 or r.json.has_key('number'):
+if r.status_code != 201 or not r.json.has_key('number'):
   print 'something bad happened posting issue'
   sys.exit(2)
 
