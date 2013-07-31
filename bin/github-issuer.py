@@ -4,6 +4,7 @@
 import argparse
 import requests
 import sys
+import json
 
 parser = argparse.ArgumentParser(description='Create issue in GitHub')
 
@@ -11,6 +12,7 @@ parser.add_argument('--host', help='github host used for issue creation', defaul
 parser.add_argument('-s', '--subject', required=True, help='subject for the issue')
 parser.add_argument('-b', '--body', required=True, help='body for the issue')
 parser.add_argument('--repo', help='github repo used for issue creation', required=True)
+parser.add_argument('--org', help='github Organization of repo', required=True)
 
 group = parser.add_argument_group('plain auth')
 group.add_argument('-u', '--user', help='github user used for plain auth', required=True)
@@ -22,7 +24,7 @@ parser.add_argument('-d', '--debug', help='output even more detail', action='sto
 
 #parser.add_argument('--oauth', help='oauth key')
 #parser.add_argument('--oauth-key', help='oauth key')
-#
+
 #group = parser.add_mutually_exclusive_group(required=True)
 #group.add_argument('--plain-auth', action='store_true')
 #group.add_argument('--oauth', action='store_true')
@@ -44,18 +46,16 @@ issue='''{{
 if args.debug:
   print 'ISSUE: \n' + issue
 
-url = 'http://{0}/api/v3/repos/{1}/{2}/issues'.format(args.host, args.user, args.repo)
+url = 'http://{0}/api/v3/repos/{1}/{2}/issues'.format(args.host, args.org, args.repo)
 if args.debug:
   print 'URL: ' + url
 
 r = requests.post(url, auth=(args.user, args.password), data=issue)
 
-if r.status_code != 201 or not r.json.has_key('number'):
+if r.status_code != 201:
   print 'something bad happened posting issue'
   sys.exit(2)
 
 if args.verbose:
-  print 'issue {0} created'.format(r.json['number'])
-  print r.json['html_url']
-
-
+  print 'issue {0} created'.format(json.loads(r.text)['number'])
+  print json.loads(r.text)['html_url']
